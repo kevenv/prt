@@ -1,38 +1,59 @@
-var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera(50, 800 / 600, 0.1, 1000);
+'use strict'
 
-var renderer = new THREE.WebGLRenderer();
-var offset = 20;
-renderer.setSize(800, 600);
-document.body.appendChild(renderer.domElement);
+var WINDOW_WIDTH = 800;
+var WINDOW_HEIGHT = 600;
 
-var geometry = new THREE.PlaneGeometry(10,10,1,1);
-var material = new THREE.MeshNormalMaterial();
-var materialCube = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide} );
-var cube = new THREE.Mesh(geometry, materialCube);
-scene.add(cube);
+var scene = null;
+var camera = null;
+var renderer = null;
+var teapot = null;
 
-cube.rotation.x = Math.PI/2;
+document.addEventListener("load", onLoad());
 
-camera.position.x = 7.54;
-camera.position.y = 3.77;
-camera.position.z = 7.54;
-camera.lookAt(new THREE.Vector3(0,0,0));
-
-var loader = new THREE.OBJLoader();
-	loader.load('assets/teapot.obj', function(object) {
-	console.log('added teapot');
-	scene.add(object);
-	teapot = object;
-	teapot.children[0].material = material;
-});
-
-function render() {
-	requestAnimationFrame(render);
-
-	teapot.rotation.y += 0.1;
-
-	renderer.render(scene,camera);
+function onLoad() {	
+	onInit();
+	onRender();
 }
 
-render();
+function onRender() {
+	requestAnimationFrame(onRender);
+	onUpdate();
+	renderer.render(scene, camera);
+}
+
+function onInit() {
+	renderer = new THREE.WebGLRenderer();
+	renderer.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+	document.body.appendChild(renderer.domElement);
+
+	scene = new THREE.Scene();
+	camera = new THREE.PerspectiveCamera(50, WINDOW_WIDTH/WINDOW_HEIGHT, 0.1, 1000);
+	// camera
+	camera.position.x = 7.54;
+	camera.position.y = 3.77;
+	camera.position.z = 7.54;
+	camera.lookAt(new THREE.Vector3(0,0,0));
+
+	// plane
+	var geometry = new THREE.PlaneGeometry(10,10,1,1);	
+	var materialPlane = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide} );
+	var plane = new THREE.Mesh(geometry, materialPlane);
+	scene.add(plane);
+
+	plane.rotation.x = Math.PI/2;
+	
+	// teapot
+	var material = new THREE.MeshNormalMaterial();
+
+	var loader = new THREE.OBJLoader();
+	loader.load('assets/teapot.obj', function(object) {
+		scene.add(object);
+		object.children[0].material = material;
+		console.log('loaded teapot');
+		teapot = object;
+	});
+}
+
+function onUpdate() {
+	teapot.rotation.y += 0.1;
+}
