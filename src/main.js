@@ -6,7 +6,7 @@ var WINDOW_HEIGHT = 600;
 var ALBEDO = 1.0;
 var USE_CACHE = false;
 var N_COEFFS = 9;
-var N_MONTE_CARLO = 100;
+var N_MONTE_CARLO = 50;
 var PRECOMPUTE_FILE_NAME = "prt_precomputed.json";
 
 var loc = window.location.pathname;
@@ -68,8 +68,8 @@ function onInit() {
 		var colors = new Float32Array(N_VERTS * 3);
 		for(var i = 0; i < N_VERTS; i++) {
 			colors[i*3+0] = 1.0;
-			colors[i*3+1] = 0.0;
-			colors[i*3+2] = 0.0;
+			colors[i*3+1] = 1.0;
+			colors[i*3+2] = 1.0;
 		}
 		teapot.geometry.addAttribute("mycolor", new THREE.BufferAttribute(colors, 3));
 
@@ -180,8 +180,8 @@ function precomputeG() {
 }
 
 function computeG(v, verts, normals, samples) {
-	var p = new THREE.Vector3(verts[v+0],verts[v+1],verts[v+2]);
-	var n = new THREE.Vector3(normals[v+0],normals[v+1],normals[v+2]);
+	var p = new THREE.Vector3(verts[v*3+0],verts[v*3+1],verts[v*3+2]);
+	var n = new THREE.Vector3(normals[v*3+0],normals[v*3+1],normals[v*3+2]);
 
 	for(var i = 0; i < N_MONTE_CARLO; i++) {
 		console.log("v= " + v + " MC = " + (i+1));
@@ -191,7 +191,7 @@ function computeG(v, verts, normals, samples) {
 		w.normalize();
 		var cosTheta = Math.max(0.0, w.dot(n));
 		var pWi = 1.0 / (4 * Math.PI);
-		var its = bvh.intersectRay(p, n, true);
+		var its = bvh.intersectRay(p, w, true);
 		var V = its.length == 0;
 		if(V) {
 			var yi = SHEval3(w.x, w.y, w.z);
@@ -235,8 +235,8 @@ function onUpdate() {
 	var verts = teapot.geometry.getAttribute("mycolor");
 	for(var v = 0; v < verts.count; v++) {
 		verts.array[v*3+0] = 1.0;
-		verts.array[v*3+1] = 0.0;
-		verts.array[v*3+2] = 0.0;
+		verts.array[v*3+1] = 1.0;
+		verts.array[v*3+2] = 1.0;
 		for(var i = 0; i < N_COEFFS; i++) {
 			var k = L[i] * G[v][i] * ALBEDO;
 			verts.array[v*3+0] += k;
