@@ -24,8 +24,34 @@ var objects = [];
 var L = [];
 var PRTCache = []; // list of G
 
+var L_r = 1.0;
+var L_d = 3.5;
+
 // Events
 document.addEventListener("load", onLoad());
+
+document.addEventListener("keydown", function(event) {
+	var key = event.key;
+
+	var o = 0.1;
+
+	if(key == "a") {
+		L_r -= o;
+	}
+	else if(key == "s") {
+		L_r += o;
+	}
+
+	if(key == "q") {
+		L_d -= o;
+	}
+	else if(key == "w") {
+		L_d += o;
+	}
+	precomputeL();
+	console.log(L_r + " , " + L_d);
+
+}, false);
 
 function onLoad() {	
 	onInit();
@@ -135,7 +161,7 @@ function buildBVH(objects) {
 
 function precomputeL() {
 	console.log("compute L...");
-	computeL_env_proj(1.0, 3.5)
+	computeL_env_proj(L_r, L_d);
 	console.log("[done]");
 }
 
