@@ -17,6 +17,7 @@ var PRECOMPUTE_FILE_PATH = dir + "/" + PRECOMPUTE_FILE_NAME;
 var scene = null;
 var camera = null;
 var renderer = null;
+var controls = null;
 var bvh = null;
 var teapot = null;
 var plane = null;
@@ -51,6 +52,9 @@ function onInit() {
 	camera.position.z = 7.54;
 	camera.lookAt(new THREE.Vector3(0,0,0));
 
+	// controls
+	controls = new THREE.OrbitControls(camera, renderer.domElement);
+
 	// plane
 	var geometry = new THREE.PlaneGeometry(10,10,100,100);
 	var materialPlane = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide} );
@@ -68,8 +72,8 @@ function onInit() {
 		var colors = new Float32Array(N_VERTS * 3);
 		for(var i = 0; i < N_VERTS; i++) {
 			colors[i*3+0] = 1.0;
-			colors[i*3+1] = 1.0;
-			colors[i*3+2] = 1.0;
+			colors[i*3+1] = 0.0;
+			colors[i*3+2] = 0.0;
 		}
 		teapot.geometry.addAttribute("mycolor", new THREE.BufferAttribute(colors, 3));
 
@@ -173,7 +177,7 @@ function precomputeG() {
 			computeG(v, verts.array, normals.array, samples);
 		}
 
-		//writeJson(G, PRECOMPUTE_FILE_NAME, 'text/plain');
+		writeJson(G, PRECOMPUTE_FILE_NAME, 'text/plain');
 
 		console.log("[done]");
 	}
@@ -232,11 +236,13 @@ function computeL_env_proj(r, d) {
 }
 
 function onUpdate() {
+	controls.update();
+
 	var verts = teapot.geometry.getAttribute("mycolor");
 	for(var v = 0; v < verts.count; v++) {
 		verts.array[v*3+0] = 1.0;
-		verts.array[v*3+1] = 1.0;
-		verts.array[v*3+2] = 1.0;
+		verts.array[v*3+1] = 0.0;
+		verts.array[v*3+2] = 0.0;
 		for(var i = 0; i < N_COEFFS; i++) {
 			var k = L[i] * G[v][i] * ALBEDO;
 			verts.array[v*3+0] += k;
