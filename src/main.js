@@ -19,8 +19,7 @@ var camera = null;
 var renderer = null;
 var controls = null;
 var bvh = null;
-var teapot = null;
-var plane = null;
+var objects = [];
 
 var L = [];
 var PRTCache = []; // list of G
@@ -63,14 +62,14 @@ function onInit() {
 
 	// plane
 	var geometry = new THREE.PlaneBufferGeometry(10,10,100,100);
-	plane = new THREE.Mesh(geometry, basicShader);
+	var plane = new THREE.Mesh(geometry, basicShader);
 	createColorAttrib(plane, new THREE.Vector3(0.0,1.0,0.0));
 	scene.add(plane);
 
 	// teapot
 	var loader = new THREE.OBJLoader();
 	loader.load('assets/teapot.obj', function(object) {
-		teapot = object.children[0];
+		var teapot = object.children[0];
 
 		// shader
 		teapot.material = basicShader;
@@ -84,8 +83,11 @@ function onInit() {
 		
 		console.log('loaded teapot');
 
+		objects.push(plane);
+		objects.push(teapot);
+
 		// init
-		buildBVH([teapot, plane]);
+		buildBVH(objects);
 		precomputeL();
 		precomputeG();
 		onRender();
@@ -150,22 +152,26 @@ function precomputeG() {
 
 		console.log("compute G...");
 
-		var verts = teapot.geometry.getAttribute("position");
-		var normals = teapot.geometry.getAttribute("normal");
-		var N_VERTS = verts.count;
-		var G = new Array(N_VERTS);
-		for(var i = 0; i < G.length; i++) {
-			G[i] = new Array(N_COEFFS);
-			for(var k = 0; k < N_COEFFS; k++) {
-				G[i][k] = 0.0;
+		for(var j = 0; j < objects.length; j++) {
+			console.log(objects);
+			var obj = objects[j];
+			var verts = obj.geometry.getAttribute("position");
+			var normals = obj.geometry.getAttribute("normal");
+			var N_VERTS = verts.count;
+			var G = new Array(N_VERTS);
+			for(var i = 0; i < G.length; i++) {
+				G[i] = new Array(N_COEFFS);
+				for(var k = 0; k < N_COEFFS; k++) {
+					G[i][k] = 0.0;
+				}
 			}
-		}
-		
-		for(var v = 0; v < N_VERTS; v++) {
-			computeG(G, v, verts.array, normals.array, samples);
-		}
+			
+			for(var v = 0; v < N_VERTS; v++) {
+				computeG(G, v, verts.array, normals.array, samples);
+			}
 
-		PRTCache.push(G);
+			PRTCache.push(G);
+		}
 
 		writeJson(PRTCache, PRECOMPUTE_FILE_NAME, 'text/plain');
 
@@ -228,18 +234,20 @@ function computeL_env_proj(r, d) {
 function onUpdate() {
 	controls.update();
 
-	var G = PRTCache[0];
-
-	var verts = teapot.geometry.getAttribute("mycolor");
-	for(var v = 0; v < verts.count; v++) {
-		verts.array[v*3+0] = 1.0;
-		verts.array[v*3+1] = 0.0;
-		verts.array[v*3+2] = 0.0;
-		for(var i = 0; i < N_COEFFS; i++) {
-			var k = L[i] * G[v][i] * ALBEDO;
-			verts.array[v*3+0] += k;
-			verts.array[v*3+1] += k;
-			verts.array[v*3+2] += k;
+	for(var j = 0; j < objects.length; j++) {
+		var obj = objects[j];
+		var G = PRTCache[j];
+		var verts = obj.geometry.getAttribute("mycolor");
+		for(var v = 0; v < verts.count; v++) {
+			verts.array[v*3+0] = 1.0;
+			verts.array[v*3+1] = 0.0;
+			verts.array[v*3+2] = 0.0;
+			for(var i = 0; i < N_COEFFS; i++) {
+				var k = L[i] * G[v][i] * ALBEDO;
+				verts.array[v*3+0] += k;
+				verts.array[v*3+1] += k;
+				verts.array[v*3+2] += k;
+			}
 		}
 	}
 }
