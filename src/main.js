@@ -55,10 +55,16 @@ function onInit() {
 	// controls
 	controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+	// shader
+	var basicShader = new THREE.ShaderMaterial( {
+		vertexShader : "attribute vec3 mycolor; varying vec3 vColor; void main() { vColor = mycolor; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
+		fragmentShader : "varying vec3 vColor; void main() { gl_FragColor = vec4(vColor,1.0); }"
+	});
+
 	// plane
-	var geometry = new THREE.PlaneGeometry(10,10,100,100);
-	var materialPlane = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide} );
-	plane = new THREE.Mesh(geometry, materialPlane);
+	var geometry = new THREE.PlaneBufferGeometry(10,10,100,100);
+	plane = new THREE.Mesh(geometry, basicShader);
+	createColorAttrib(plane, new THREE.Vector3(0.0,1.0,0.0));
 	scene.add(plane);
 
 	// teapot
@@ -66,22 +72,9 @@ function onInit() {
 	loader.load('assets/teapot.obj', function(object) {
 		teapot = object.children[0];
 
-		// create color attrib
-		var verts = teapot.geometry.getAttribute("position");
-		var N_VERTS = verts.count;
-		var colors = new Float32Array(N_VERTS * 3);
-		for(var i = 0; i < N_VERTS; i++) {
-			colors[i*3+0] = 1.0;
-			colors[i*3+1] = 0.0;
-			colors[i*3+2] = 0.0;
-		}
-		teapot.geometry.addAttribute("mycolor", new THREE.BufferAttribute(colors, 3));
-
-		// create shader
-		teapot.material = new THREE.ShaderMaterial( {
-			vertexShader : "attribute vec3 mycolor; varying vec3 vColor; void main() { vColor = mycolor; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
-			fragmentShader : "varying vec3 vColor; void main() { gl_FragColor = vec4(vColor,1.0); }"
-		});
+		// shader
+		teapot.material = basicShader;
+		createColorAttrib(teapot, new THREE.Vector3(1.0,0.0,0.0));
 
 		// position
 		object.rotation.x = Math.PI/2;
@@ -99,40 +92,35 @@ function onInit() {
 	});
 }
 
+function createColorAttrib(mesh, color) {
+	var verts = mesh.geometry.getAttribute("position");
+	var N_VERTS = verts.count;
+	var colors = new Float32Array(N_VERTS * 3);
+	for(var i = 0; i < N_VERTS; i++) {
+		colors[i*3+0] = color.x;
+		colors[i*3+1] = color.y;
+		colors[i*3+2] = color.z;
+	}
+	mesh.geometry.addAttribute("mycolor", new THREE.BufferAttribute(colors, 3));
+}
+
 function buildBVH(objects) {
 	console.log("build bvh...");
 
 	var triangles = [];
 
 	for(var i = 0; i < objects.length; i++) {
-		if(objects[i].geometry.vertices != null) {
-			var verts = objects[i].geometry.vertices;
-			var tri = objects[i].geometry.faces;
-			for(var k = 0; k < tri.length; k++) {
-				var v0 = verts[tri[k].a];
-				var v1 = verts[tri[k].b];
-				var v2 = verts[tri[k].c];
-				var triangle = [
-					{x: v0.x, y: v0.y, z: v0.z},
-					{x: v1.x, y: v1.y, z: v1.z},
-					{x: v2.x, y: v2.y, z: v2.z},
-				];
-				triangles.push(triangle);
-			}
-		}
-		else {
-			var verts = objects[i].geometry.getAttribute("position").array;
-			for(var k = 0; k < verts.count*3; k+=9) {
-				var v0 = new THREE.Vector3(verts[k+0], verts[k+1], verts[k+2]);
-				var v1 = new THREE.Vector3(verts[k+3], verts[k+4], verts[k+5]);
-				var v2 = new THREE.Vector3(verts[k+6], verts[k+7], verts[k+8]);
-				var triangle = [
-					{x: v0.x, y: v0.y, z: v0.z},
-					{x: v1.x, y: v1.y, z: v1.z},
-					{x: v2.x, y: v2.y, z: v2.z},
-				];
-				triangles.push(triangle);
-			}
+		var verts = objects[i].geometry.getAttribute("position").array;
+		for(var k = 0; k < verts.count*3; k+=9) {
+			var v0 = new THREE.Vector3(verts[k+0], verts[k+1], verts[k+2]);
+			var v1 = new THREE.Vector3(verts[k+3], verts[k+4], verts[k+5]);
+			var v2 = new THREE.Vector3(verts[k+6], verts[k+7], verts[k+8]);
+			var triangle = [
+				{x: v0.x, y: v0.y, z: v0.z},
+				{x: v1.x, y: v1.y, z: v1.z},
+				{x: v2.x, y: v2.y, z: v2.z},
+			];
+			triangles.push(triangle);
 		}
 	}
 
@@ -197,7 +185,7 @@ function computeG(G, v, verts, normals, samples) {
 		w.normalize();
 		var cosTheta = Math.max(0.0, w.dot(n));
 		var pWi = 1.0 / (4 * Math.PI);
-		var its = bvh.intersectRay(p, w, true);
+		var its = bvh.intersectRay(p, w, false);
 		var V = its.length == 0;
 		if(V) {
 			var yi = SHEval3(w.x, w.y, w.z);
