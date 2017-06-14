@@ -23,7 +23,7 @@ var teapot = null;
 var plane = null;
 
 var L = [];
-var G = [];
+var PRTCache = []; // list of G
 
 // Events
 document.addEventListener("load", onLoad());
@@ -152,7 +152,7 @@ function precomputeL() {
 function precomputeG() {
 	if(USE_CACHE) {
 		readJson(PRECOMPUTE_FILE_PATH, function(data) {
-			G = data;
+			PRTCache = data;
 		});
 	}
 	else {
@@ -165,7 +165,7 @@ function precomputeG() {
 		var verts = teapot.geometry.getAttribute("position");
 		var normals = teapot.geometry.getAttribute("normal");
 		var N_VERTS = verts.count;
-		G = new Array(N_VERTS);
+		var G = new Array(N_VERTS);
 		for(var i = 0; i < G.length; i++) {
 			G[i] = new Array(N_COEFFS);
 			for(var k = 0; k < N_COEFFS; k++) {
@@ -174,16 +174,18 @@ function precomputeG() {
 		}
 		
 		for(var v = 0; v < N_VERTS; v++) {
-			computeG(v, verts.array, normals.array, samples);
+			computeG(G, v, verts.array, normals.array, samples);
 		}
 
-		writeJson(G, PRECOMPUTE_FILE_NAME, 'text/plain');
+		PRTCache.push(G);
+
+		writeJson(PRTCache, PRECOMPUTE_FILE_NAME, 'text/plain');
 
 		console.log("[done]");
 	}
 }
 
-function computeG(v, verts, normals, samples) {
+function computeG(G, v, verts, normals, samples) {
 	var p = new THREE.Vector3(verts[v*3+0],verts[v*3+1],verts[v*3+2]);
 	var n = new THREE.Vector3(normals[v*3+0],normals[v*3+1],normals[v*3+2]);
 
@@ -237,6 +239,8 @@ function computeL_env_proj(r, d) {
 
 function onUpdate() {
 	controls.update();
+
+	var G = PRTCache[0];
 
 	var verts = teapot.geometry.getAttribute("mycolor");
 	for(var v = 0; v < verts.count; v++) {
