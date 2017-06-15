@@ -159,8 +159,10 @@ function buildBVH(objects) {
 	var triangles = [];
 
 	for(var i = 0; i < objects.length; i++) {
-		var verts = objects[i].geometry.getAttribute("position").array;
-		for(var k = 0; k < verts.count*3; k+=9) {
+		var verts = objects[i].geometry.getAttribute("position");
+		var N_VERTS = verts.count;
+		var verts = verts.array;
+		for(var k = 0; k < N_VERTS*3; k+=3*3) {
 			var v0 = new THREE.Vector3(verts[k+0], verts[k+1], verts[k+2]);
 			var v1 = new THREE.Vector3(verts[k+3], verts[k+4], verts[k+5]);
 			var v2 = new THREE.Vector3(verts[k+6], verts[k+7], verts[k+8]);
