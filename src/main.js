@@ -179,7 +179,6 @@ function precomputeG() {
 		console.log("compute G...");
 
 		for(var j = 0; j < objects.length; j++) {
-			console.log(objects);
 			var obj = objects[j];
 			var verts = obj.geometry.getAttribute("position");
 			var normals = obj.geometry.getAttribute("normal");
@@ -191,7 +190,7 @@ function precomputeG() {
 					G[i][k] = 0.0;
 				}
 			}
-			
+
 			for(var v = 0; v < N_VERTS; v++) {
 				computeG(G, v, verts.array, normals.array, samples);
 			}
@@ -199,7 +198,7 @@ function precomputeG() {
 			PRTCache.push(G);
 		}
 
-		writeJson(PRTCache, PRECOMPUTE_FILE_NAME, 'text/plain');
+		//writeJson(PRTCache, PRECOMPUTE_FILE_NAME, 'text/plain');
 
 		console.log("[done]");
 	}
@@ -208,15 +207,15 @@ function precomputeG() {
 function computeG(G, v, verts, normals, samples) {
 	var p = new THREE.Vector3(verts[v*3+0],verts[v*3+1],verts[v*3+2]);
 	var n = new THREE.Vector3(normals[v*3+0],normals[v*3+1],normals[v*3+2]);
-
+	
 	for(var i = 0; i < N_MONTE_CARLO; i++) {
-		console.log("v= " + v + " MC = " + (i+1));
+		//console.log("v= " + v + " MC = " + (i+1));
 
 		var w = samples[i].clone();
 		//w.add(p);//to world space
 		w.normalize();
 		var cosTheta = Math.max(0.0, w.dot(n));
-		var pWi = 1.0 / (4 * Math.PI);
+		var pWi = 1.0 / (4.0 * Math.PI);
 		var its = bvh.intersectRay(p, w, false);
 		var V = its.length == 0;
 		if(V) {
@@ -226,13 +225,17 @@ function computeG(G, v, verts, normals, samples) {
 			}
 		}
 	}
-	G[v][k] *= ALBEDO / (Math.PI * N_MONTE_CARLO * pWi);
+
+	for(var k = 0; k < N_COEFFS; k++) {
+		G[v][k] *= ALBEDO / (Math.PI * N_MONTE_CARLO * pWi);
+	}
 }
 
 function createSamples(N, samples) {
 	for(var i = 0; i < N; i++) {
 		var sample = new THREE.Vector2(Math.random(), Math.random());
 		samples[i] = squareToUniformSphere(sample);
+		//console.log(sample.x + "," + sample.y + ": " + samples[i].x + "," + samples[i].y + "," + samples[i].z);
 	}
 }
 
