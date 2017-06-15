@@ -80,6 +80,27 @@ function onInit() {
 	// controls
 	controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+	// 3D-axis
+	var K = 10;
+	var matX = new THREE.LineBasicMaterial({color:0xff0000});
+	var matY = new THREE.LineBasicMaterial({color:0x00ff00});
+	var matZ = new THREE.LineBasicMaterial({color:0x0000ff});
+	var geometryX = new THREE.Geometry();
+	geometryX.vertices.push(new THREE.Vector3(0, 0, 0));
+	geometryX.vertices.push(new THREE.Vector3(K, 0, 0));
+	var lineX = new THREE.Line(geometryX, matX);
+	scene.add(lineX);
+	var geometryY = new THREE.Geometry();
+	geometryY.vertices.push(new THREE.Vector3(0, 0, 0));
+	geometryY.vertices.push(new THREE.Vector3(0, K, 0));
+	var lineY = new THREE.Line(geometryY, matY);
+	scene.add(lineY);
+	var geometryZ = new THREE.Geometry();
+	geometryZ.vertices.push(new THREE.Vector3(0, 0, 0));
+	geometryZ.vertices.push(new THREE.Vector3(0, 0, K));
+	var lineZ = new THREE.Line(geometryZ, matZ);
+	scene.add(lineZ);
+
 	// shader
 	var basicShader = new THREE.ShaderMaterial( {
 		vertexShader : "attribute vec3 mycolor; varying vec3 vColor; void main() { vColor = mycolor; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
