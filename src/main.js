@@ -25,8 +25,8 @@ var objects = [];
 var L = [];
 var PRTCache = []; // list of G
 
-var L_r = 0.5;
-var L_d = 0.7;
+var L_r = 1.5;
+var L_d = 1.7;
 
 // Events
 document.addEventListener("load", onLoad());
@@ -255,9 +255,9 @@ function computeG(G, v, verts, normals, samples) {
 		//w.add(p);//to world space
 		w.normalize();
 		var cosTheta = Math.max(0.0, w.dot(n));
+		if(cosTheta == 0.0) continue;
 		var pWi = 1.0 / (4.0 * Math.PI);
-		var its = bvh.intersectRay(p, w, true);
-		var V = its.length == 0;
+		var V = bvh.intersectRay(p, w, true).length == 0;
 		if(V) {
 			var yi = SHEval3(w.x, w.y, w.z);
 			for(var k = 0; k < N_COEFFS; k++) {
@@ -308,11 +308,12 @@ function onUpdate() {
 		var G = PRTCache[j];
 		var verts = obj.geometry.getAttribute("mycolor");
 		for(var v = 0; v < verts.count; v++) {
-			verts.array[v*3+0] = 1.0;
+			verts.array[v*3+0] = 0.0;
 			verts.array[v*3+1] = 0.0;
 			verts.array[v*3+2] = 0.0;
 			for(var i = 0; i < N_COEFFS; i++) {
 				var k = L[i] * G[v][i] * ALBEDO;
+				k = Math.max(0.0,k);
 				verts.array[v*3+0] += k;
 				verts.array[v*3+1] += k;
 				verts.array[v*3+2] += k;
