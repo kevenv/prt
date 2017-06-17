@@ -24,8 +24,8 @@ var objects = [];
 var L = [];
 var PRTCache = []; // list of G
 
-var L_r = 1.0;
-var L_d = 3.5;
+var L_r = 0.5;
+var L_d = 0.7;
 
 // Events
 document.addEventListener("load", onLoad());
@@ -122,9 +122,20 @@ function onInit() {
 		teapot.material = basicShader;
 		createColorAttrib(teapot, new THREE.Vector3(1.0,0.0,0.0));
 
-		// position
-		object.rotation.x = Math.PI/2;
-		object.position.z = 1.5;
+		// position + rotation
+		var rotMat = new THREE.Matrix4();
+		rotMat.makeRotationX(Math.PI/2);
+
+		var verts = teapot.geometry.getAttribute("position");
+		var N_VERTS = verts.count;
+		verts = verts.array;
+		for(var v = 0; v < N_VERTS; v++) {
+			var vert = new THREE.Vector3(verts[v*3+0], verts[v*3+1], verts[v*3+2]);
+			vert.applyMatrix4(rotMat);
+			verts[v*3+0] = vert.x;
+			verts[v*3+1] = vert.y;
+			verts[v*3+2] = vert.z + 1.5;
+		}
 
 		scene.add(object);
 		
@@ -239,7 +250,7 @@ function computeG(G, v, verts, normals, samples) {
 		w.normalize();
 		var cosTheta = Math.max(0.0, w.dot(n));
 		var pWi = 1.0 / (4.0 * Math.PI);
-		var its = bvh.intersectRay(p, w, false);
+		var its = bvh.intersectRay(p, w, true);
 		var V = its.length == 0;
 		if(V) {
 			var yi = SHEval3(w.x, w.y, w.z);
