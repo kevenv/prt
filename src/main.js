@@ -7,6 +7,7 @@ var ALBEDO = 1.0;
 var USE_CACHE = false;
 var N_COEFFS = 9;
 var N_MONTE_CARLO = 50;
+var RAY_OFFSET = 1e-18;
 var PRECOMPUTE_FILE_NAME = "prt_precomputed.json";
 
 var loc = window.location.pathname;
@@ -241,6 +242,11 @@ function precomputeG() {
 function computeG(G, v, verts, normals, samples) {
 	var p = new THREE.Vector3(verts[v*3+0],verts[v*3+1],verts[v*3+2]);
 	var n = new THREE.Vector3(normals[v*3+0],normals[v*3+1],normals[v*3+2]);
+
+	// offset ray
+	var n_ = n.clone();
+	n_.multiplyScalar(RAY_OFFSET);
+	p.add(n_);
 	
 	for(var i = 0; i < N_MONTE_CARLO; i++) {
 		//console.log("v= " + v + " MC = " + (i+1));
