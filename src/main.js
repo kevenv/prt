@@ -9,6 +9,7 @@ ALBEDO[1] = new THREE.Vector3(1,1,1);
 var N_COEFFS = 9;
 var N_MONTE_CARLO = 100;
 var RAY_OFFSET = 1e-18;
+var MODEL_FILE_NAME = "teapot.obj";
 var PRECOMPUTE_FILE_NAME = "prt_precomputed.json";
 
 // Globals
@@ -17,6 +18,9 @@ var camera = null;
 var renderer = null;
 var controls = null;
 var bvh = null;
+var basicShader = null;
+var plane = null;
+var loadedModel = null;
 var objects = [];
 
 var L = [];
@@ -83,31 +87,41 @@ function onInit() {
 	scene.add(lineZ);
 
 	// shader
-	var basicShader = new THREE.ShaderMaterial( {
+	basicShader = new THREE.ShaderMaterial( {
 		vertexShader : "attribute vec3 mycolor; varying vec3 vColor; void main() { vColor = mycolor; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
 		fragmentShader : "varying vec3 vColor; void main() { gl_FragColor = vec4(vColor,1.0); }"
 	});
 
 	// plane
 	var geometry = new THREE.PlaneBufferGeometry(10,10,100,100);
-	var plane = new THREE.Mesh(geometry, basicShader);
+	plane = new THREE.Mesh(geometry, basicShader);
 	createColorAttrib(plane, new THREE.Vector3(0.0,1.0,0.0));
 	scene.add(plane);
 
-	// teapot
+	onRender();
+}
+
+function loadModel() {
+	if(loadedModel) {
+		scene.remove(loadedModel);
+		objects = [];
+		objects.push(plane);
+		loadedModel = null;
+	}
+
 	var loader = new THREE.OBJLoader();
-	loader.load('assets/teapot.obj', function(object) {
-		var teapot = object.children[0];
+	loader.load("assets/" + MODEL_FILE_NAME, function(object) {
+		var model = object.children[0];
 
 		// shader
-		teapot.material = basicShader;
-		createColorAttrib(teapot, new THREE.Vector3(1.0,0.0,0.0));
+		model.material = basicShader;
+		createColorAttrib(model, new THREE.Vector3(1.0,0.0,0.0));
 
 		// position + rotation
 		var rotMat = new THREE.Matrix4();
 		rotMat.makeRotationX(Math.PI/2);
 
-		var verts = teapot.geometry.getAttribute("position");
+		var verts = model.geometry.getAttribute("position");
 		var N_VERTS = verts.count;
 		verts = verts.array;
 		for(var v = 0; v < N_VERTS; v++) {
@@ -119,16 +133,13 @@ function onInit() {
 		}
 
 		scene.add(object);
-		
-		console.log('loaded teapot');
-
-		objects.push(plane);
-		objects.push(teapot);
+		objects.push(model);
+		loadedModel = object;
+		console.log('loaded model');
 
 		// init
 		buildBVH(objects);
-		precomputeL();
-		onRender();
+		precomputeL();	
 	});
 }
 
@@ -416,6 +427,13 @@ function initControls() {
 		var text_L_d = document.getElementById("text_L_d");
 		text_L_d.value = L_d;
 		precomputeL();
+	});
+
+	var button_loadModel = document.getElementById("button_loadModel");
+	button_loadModel.addEventListener("click", function() {
+		var file_loadModel = document.getElementById("file_loadModel");
+		MODEL_FILE_NAME = file_loadModel.value.substring(12,file_loadModel.value.length);
+		loadModel();
 	});
 
 	var slider_montecarlo = document.getElementById("slider_montecarlo");
