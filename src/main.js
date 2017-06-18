@@ -195,6 +195,8 @@ function precomputeG(useCache) {
 
 		console.log("compute G...");
 
+		PRTCache = [];
+
 		for(var j = 0; j < objects.length; j++) {
 			var obj = objects[j];
 			var verts = obj.geometry.getAttribute("position");
