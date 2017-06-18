@@ -1,3 +1,14 @@
+/*
+	Precomputed Radiance Transfert (PRT)
+
+	Demo for the computer graphics paper discussion group at McGill University.
+	Based on:
+			Precomputed Radiance Transfer for Real-Time Rendering in Dynamic, Low-Frequency Lighting Environments
+	        http://www.ppsloan.org/publications/shillum_final23.pdf
+
+	by Keven Villeneuve
+*/
+
 'use strict'
 
 // Constants
@@ -231,8 +242,8 @@ function precomputeG(useCache) {
 			PRTCache.push(G);
 		}
 
-		console.log("[done]");
 		PRTCacheGood = true;
+		console.log("[done]");
 	}
 }
 
