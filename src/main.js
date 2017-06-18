@@ -28,6 +28,8 @@ var PRTCache = []; // list of G
 var L_r = 1.5;
 var L_d = 1.7;
 var L_INTENSITY = 1.0;
+var L_DIR = new THREE.Vector3(0,0,1);
+var L_ANGLE = 90.0;
 
 // Events
 document.addEventListener("load", onLoad());
@@ -175,7 +177,7 @@ function buildBVH(objects) {
 
 function precomputeL() {
 	console.log("compute L...");
-	computeL_env_proj(L_r, L_d);
+	computeL_env_proj(L_r, L_d, L_DIR);
 	console.log("[done]");
 }
 
@@ -265,18 +267,35 @@ function squareToUniformSphere(sample) {
 	return new THREE.Vector3(r * Math.cos(phi), r * Math.sin(phi), z);
 }
 
-function computeL_env_proj(r, d) {
+function computeL_env_proj(r, d, dir) {
+	var L0 = computeL0_env_proj(r,d);
+	var y = SHEval3(dir.x, dir.y, dir.z);
+	var Lr = new Array(N_COEFFS);
+	for(var l = 0; l <= 2; l++) {
+		for(var m = -l; m <= l; m++) {
+			var i = l*(l+1) + m;
+			Lr[i] = Math.sqrt(4*Math.PI / (2*l + 1)) * L0[l*(l+1)] * y[i];
+		}
+	}
+	L = Lr;
+}
+
+function computeL0_env_proj(r, d) {
 	// up = z
 	// based on sh.nb
-	L[0] = Math.sqrt(Math.PI) * (1 - Math.sqrt(1 - (r*r)/(d*d)));
-	L[1] = 0.0;
-	L[2] = (Math.sqrt(3*Math.PI) * r*r) / (2*d*d);
-	L[3] = 0.0;
-	L[4] = 0.0;
-	L[5] = 0.0;
-	L[6] = (Math.sqrt(5*Math.PI) * r*r * Math.sqrt(1 - (r*r)/(d*d))) / (2*d*d);
-	L[7] = 0.0;
-	L[8] = 0.0;
+	var L0 = new Array(N_COEFFS);
+
+	L0[0] = Math.sqrt(Math.PI) * (1 - Math.sqrt(1 - (r*r)/(d*d)));
+	L0[1] = 0.0;
+	L0[2] = (Math.sqrt(3*Math.PI) * r*r) / (2*d*d);
+	L0[3] = 0.0;
+	L0[4] = 0.0;
+	L0[5] = 0.0;
+	L0[6] = (Math.sqrt(5*Math.PI) * r*r * Math.sqrt(1 - (r*r)/(d*d))) / (2*d*d);
+	L0[7] = 0.0;
+	L0[8] = 0.0;
+
+	return L0;
 }
 
 function onUpdate() {
@@ -331,6 +350,10 @@ function initControls() {
 	var text_L_intensity = document.getElementById("text_L_intensity");
 	text_L_intensity.value = L_INTENSITY;
 
+	var text_L_direction = document.getElementById("text_L_direction");
+	text_L_direction.value = L_ANGLE;
+	L_DIR = computeLightDir(L_ANGLE);
+
 	var text_L_r = document.getElementById("text_L_r");
 	text_L_r.value = L_r;
 
@@ -349,6 +372,17 @@ function initControls() {
 	});
 
 	var sliderDirection = document.getElementById("slider_L_direction");
+	sliderDirection.defaultValue = L_ANGLE;
+	sliderDirection.min = 0.0;
+	sliderDirection.max = 180.0;
+	sliderDirection.step = 5.0;
+	sliderDirection.addEventListener("input", function() {
+		L_ANGLE = parseFloat(sliderDirection.value);
+		var text_L_direction = document.getElementById("text_L_direction");
+		text_L_direction.value = L_ANGLE;
+		L_DIR = computeLightDir(L_ANGLE);
+		precomputeL();
+	});
 
 	var sliderL_r = document.getElementById("slider_L_r");
 	sliderL_r.defaultValue = L_r;
@@ -374,3 +408,15 @@ function initControls() {
 		precomputeL();
 	});
 }
+
+function computeLightDir(angleDeg) {
+	var v = new THREE.Vector3(0,1,0); // at 0 deg
+	var rotMat = new THREE.Matrix4();
+	rotMat.makeRotationX(toRadians(angleDeg));
+	v.applyMatrix4(rotMat);
+	return v;
+}
+
+function toRadians(deg) {
+	return deg * Math.PI / 180;
+};
