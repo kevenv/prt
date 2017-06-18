@@ -11,10 +11,6 @@ var N_MONTE_CARLO = 100;
 var RAY_OFFSET = 1e-18;
 var PRECOMPUTE_FILE_NAME = "prt_precomputed.json";
 
-var loc = window.location.pathname;
-var dir = loc.substring(0, loc.lastIndexOf('/'));
-var PRECOMPUTE_FILE_PATH = dir + "/" + PRECOMPUTE_FILE_NAME;
-
 // Globals
 var scene = null;
 var camera = null;
@@ -26,6 +22,7 @@ var objects = [];
 var L = [];
 var PRTCache = []; // list of G
 var PRTCacheGood = false;
+var PRECOMPUTE_FILE_PATH = "";
 
 var L_r = 1.5;
 var L_d = 1.7;
@@ -183,9 +180,12 @@ function precomputeL() {
 }
 
 function precomputeG(useCache) {
+	PRTCacheGood = false;
+
 	if(useCache) {
 		readJson(PRECOMPUTE_FILE_PATH, function(data) {
 			PRTCache = data;
+			PRTCacheGood = true;
 		});
 	}
 	else {
@@ -216,6 +216,7 @@ function precomputeG(useCache) {
 		}
 
 		console.log("[done]");
+		PRTCacheGood = true;
 	}
 }
 
@@ -433,9 +434,7 @@ function initControls() {
 
 	var button_computePRT = document.getElementById("button_computePRT");
 	button_computePRT.addEventListener("click", function() {
-		PRTCacheGood = false;
 		precomputeG(false);
-		PRTCacheGood = true;
 	});
 
 	var button_savePRT = document.getElementById("button_savePRT");
@@ -445,6 +444,20 @@ function initControls() {
 		if(PRTCacheGood) {
 			writeJson(PRTCache, PRECOMPUTE_FILE_NAME, 'text/plain');
 		}
+	});
+
+	var button_loadPRT = document.getElementById("button_loadPRT");
+	button_loadPRT.addEventListener("click", function() {
+		var file_loadPRT = document.getElementById("file_loadPRT");
+		PRECOMPUTE_FILE_NAME = file_loadPRT.value.substring(12,file_loadPRT.value.length);
+
+		var text_savePRT = document.getElementById("text_savePRT");
+		text_savePRT.value = PRECOMPUTE_FILE_NAME;
+		
+		var loc = window.location.pathname;
+		var dir = loc.substring(0, loc.lastIndexOf('/'));
+		PRECOMPUTE_FILE_PATH = dir + "/" + PRECOMPUTE_FILE_NAME;
+		precomputeG(true);
 	});
 }
 
