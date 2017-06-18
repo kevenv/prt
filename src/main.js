@@ -216,8 +216,6 @@ function precomputeG() {
 			PRTCache.push(G);
 		}
 
-		//writeJson(PRTCache, PRECOMPUTE_FILE_NAME, 'text/plain');
-
 		console.log("[done]");
 	}
 }
@@ -362,6 +360,9 @@ function initControls() {
 	var text_L_d = document.getElementById("text_L_d");
 	text_L_d.value = L_d;
 
+	var text_savePRT = document.getElementById("text_savePRT");
+	text_savePRT.value = PRECOMPUTE_FILE_NAME;
+
 	var sliderIntensity = document.getElementById("slider_L_intensity");
 	sliderIntensity.defaultValue = L_INTENSITY;
 	sliderIntensity.min = 0.0;
@@ -408,6 +409,13 @@ function initControls() {
 		var text_L_d = document.getElementById("text_L_d");
 		text_L_d.value = L_d;
 		precomputeL();
+	});
+
+	var button_savePRT = document.getElementById("button_savePRT");
+	button_savePRT.addEventListener("click", function() {
+		var text_savePRT = document.getElementById("text_savePRT");
+		PRECOMPUTE_FILE_NAME = text_savePRT.value;
+		writeJson(PRTCache, PRECOMPUTE_FILE_NAME, 'text/plain');
 	});
 }
 
