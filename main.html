@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset=utf-8>
-		<title>Precomputer Radiance Transfert (PRT)</title>
+		<title>Precomputed Radiance Transfert (PRT)</title>
 		<style>
 			body { margin: 10; }
 			canvas { width: 800; height: 600; }
@@ -37,8 +37,13 @@
 				<input type="text" id="text_L_d">
 			</div>
 			<div class="block">
+				<input type="button" value="Compute PRT" id="button_computePRT">
+				<input type="range" id="slider_montecarlo">
+				<input type="text" id="text_montecarlo">
+			</div>
+			<div class="block">
 				<input type="text" id="text_savePRT">
-				<input type="button" value="Save precomputations" id="button_savePRT">
+				<input type="button" value="Save PRT" id="button_savePRT">
 			</div>
 		</form>
 		

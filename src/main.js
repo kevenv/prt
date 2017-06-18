@@ -6,9 +6,8 @@ var WINDOW_HEIGHT = 600;
 var ALBEDO = new Array(2);
 ALBEDO[0] = new THREE.Vector3(1,0,0);
 ALBEDO[1] = new THREE.Vector3(1,1,1);
-var USE_CACHE = false;
 var N_COEFFS = 9;
-var N_MONTE_CARLO = 50;
+var N_MONTE_CARLO = 100;
 var RAY_OFFSET = 1e-18;
 var PRECOMPUTE_FILE_NAME = "prt_precomputed.json";
 
@@ -26,6 +25,7 @@ var objects = [];
 
 var L = [];
 var PRTCache = []; // list of G
+var PRTCacheGood = false;
 
 var L_r = 1.5;
 var L_d = 1.7;
@@ -131,7 +131,6 @@ function onInit() {
 		// init
 		buildBVH(objects);
 		precomputeL();
-		precomputeG();
 		onRender();
 	});
 }
@@ -183,8 +182,8 @@ function precomputeL() {
 	console.log("[done]");
 }
 
-function precomputeG() {
-	if(USE_CACHE) {
+function precomputeG(useCache) {
+	if(useCache) {
 		readJson(PRECOMPUTE_FILE_PATH, function(data) {
 			PRTCache = data;
 		});
@@ -298,8 +297,10 @@ function computeL0_env_proj(r, d) {
 	return L0;
 }
 
-function onUpdate() {
+function onUpdate() {	
 	controls.update();
+
+	if(!PRTCacheGood) return;
 
 	for(var j = 0; j < objects.length; j++) {
 		var obj = objects[j];
@@ -360,6 +361,9 @@ function initControls() {
 	var text_L_d = document.getElementById("text_L_d");
 	text_L_d.value = L_d;
 
+	var text_montecarlo = document.getElementById("text_montecarlo");
+	text_montecarlo.value = N_MONTE_CARLO;
+
 	var text_savePRT = document.getElementById("text_savePRT");
 	text_savePRT.value = PRECOMPUTE_FILE_NAME;
 
@@ -411,11 +415,36 @@ function initControls() {
 		precomputeL();
 	});
 
+	var slider_montecarlo = document.getElementById("slider_montecarlo");
+	slider_montecarlo.defaultValue = N_MONTE_CARLO;
+	slider_montecarlo.min = 0;
+	slider_montecarlo.max = 1000;
+	slider_montecarlo.step = 100;
+	slider_montecarlo.addEventListener("input", function() {
+		N_MONTE_CARLO = parseFloat(slider_montecarlo.value);
+		var text_montecarlo = document.getElementById("text_montecarlo");
+		text_montecarlo.value = N_MONTE_CARLO;
+	});
+
+	text_montecarlo.addEventListener("change", function() {
+		N_MONTE_CARLO = parseFloat(text_montecarlo.value);
+		slider_montecarlo.value = N_MONTE_CARLO;
+	});
+
+	var button_computePRT = document.getElementById("button_computePRT");
+	button_computePRT.addEventListener("click", function() {
+		PRTCacheGood = false;
+		precomputeG(false);
+		PRTCacheGood = true;
+	});
+
 	var button_savePRT = document.getElementById("button_savePRT");
 	button_savePRT.addEventListener("click", function() {
 		var text_savePRT = document.getElementById("text_savePRT");
 		PRECOMPUTE_FILE_NAME = text_savePRT.value;
-		writeJson(PRTCache, PRECOMPUTE_FILE_NAME, 'text/plain');
+		if(PRTCacheGood) {
+			writeJson(PRTCache, PRECOMPUTE_FILE_NAME, 'text/plain');
+		}
 	});
 }
 
