@@ -104,9 +104,9 @@ function onInit() {
 function loadModel() {
 	if(loadedModel) {
 		scene.remove(loadedModel);
-		objects = [];
-		objects.push(plane);
+		objects = []
 		loadedModel = null;
+		PRTCacheGood = false;
 	}
 
 	var loader = new THREE.OBJLoader();
@@ -133,13 +133,16 @@ function loadModel() {
 		}
 
 		scene.add(object);
+		objects.push(plane);
 		objects.push(model);
-		loadedModel = object;
+
 		console.log('loaded model');
 
 		// init
 		buildBVH(objects);
-		precomputeL();	
+		precomputeL();
+
+		loadedModel = object;
 	});
 }
 
