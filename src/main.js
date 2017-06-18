@@ -27,34 +27,13 @@ var PRTCache = []; // list of G
 
 var L_r = 1.5;
 var L_d = 1.7;
+var L_INTENSITY = 1.0;
 
 // Events
 document.addEventListener("load", onLoad());
 
-document.addEventListener("keydown", function(event) {
-	var key = event.key;
-
-	var o = 0.1;
-
-	if(key == "a") {
-		L_r -= o;
-	}
-	else if(key == "s") {
-		L_r += o;
-	}
-
-	if(key == "q") {
-		L_d -= o;
-	}
-	else if(key == "w") {
-		L_d += o;
-	}
-	precomputeL();
-	console.log(L_r + " , " + L_d);
-
-}, false);
-
-function onLoad() {	
+function onLoad() {
+	initControls();
 	onInit();
 }
 
@@ -312,13 +291,16 @@ function onUpdate() {
 			verts.array[v*3+1] = 0.0;
 			verts.array[v*3+2] = 0.0;
 			for(var i = 0; i < N_COEFFS; i++) {
-				var k = L[i] * G[v][i] * ALBEDO;
+				var k = L_INTENSITY * L[i] * G[v][i] * ALBEDO;
 				k = Math.max(0.0,k);
+				k = Math.min(1.0,k);
 				verts.array[v*3+0] += k;
 				verts.array[v*3+1] += k;
 				verts.array[v*3+2] += k;
 			}
 		}
+
+		verts.needsUpdate = true;
 	}
 }
 
@@ -343,4 +325,52 @@ function readJson(file, callback) {
         }
     }
     rawFile.send(null);
+}
+
+function initControls() {
+	var text_L_intensity = document.getElementById("text_L_intensity");
+	text_L_intensity.value = L_INTENSITY;
+
+	var text_L_r = document.getElementById("text_L_r");
+	text_L_r.value = L_r;
+
+	var text_L_d = document.getElementById("text_L_d");
+	text_L_d.value = L_d;
+
+	var sliderIntensity = document.getElementById("slider_L_intensity");
+	sliderIntensity.defaultValue = L_INTENSITY;
+	sliderIntensity.min = 0.0;
+	sliderIntensity.max = 3.0;
+	sliderIntensity.step = 0.1;
+	sliderIntensity.addEventListener("input", function() {
+		L_INTENSITY = parseFloat(sliderIntensity.value);
+		var text_L_intensity = document.getElementById("text_L_intensity");
+		text_L_intensity.value = L_INTENSITY;
+	});
+
+	var sliderDirection = document.getElementById("slider_L_direction");
+
+	var sliderL_r = document.getElementById("slider_L_r");
+	sliderL_r.defaultValue = L_r;
+	sliderL_r.min = 0.0;
+	sliderL_r.max = 3.0;
+	sliderL_r.step = 0.1;
+	sliderL_r.addEventListener("input", function() {
+		L_r = parseFloat(sliderL_r.value);
+		var text_L_r = document.getElementById("text_L_r");
+		text_L_r.value = L_r;
+		precomputeL();
+	});
+
+	var sliderL_d = document.getElementById("slider_L_d");
+	sliderL_d.defaultValue = L_d;
+	sliderL_d.min = 0.0;
+	sliderL_d.max = 3.0;
+	sliderL_d.step = 0.1;
+	sliderL_d.addEventListener("input", function() {
+		L_d = parseFloat(sliderL_d.value);
+		var text_L_d = document.getElementById("text_L_d");
+		text_L_d.value = L_d;
+		precomputeL();
+	});
 }

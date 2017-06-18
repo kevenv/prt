@@ -6,9 +6,38 @@
 		<style>
 			body { margin: 10; }
 			canvas { width: 800; height: 600; }
+
+			label {
+				display: inline-block;
+				width: 100px;
+				text-align: left;
+			}​
 		</style>
 	</head>
 	<body>
+		<form>
+			<div class="block">
+				<label>Light intensity</label>
+				<input type="range" id="slider_L_intensity">
+				<input type="text" id="text_L_intensity">
+			</div>
+			<div class="block">
+				<label>Light direction</label>
+				<input type="range" id="slider_L_direction">
+				<input type="text" id="text_L_direction">
+			</div>
+			<div class="block">
+				<label>Light radius (r)</label>
+				<input type="range" id="slider_L_r">
+				<input type="text" id="text_L_r">
+			</div>
+			<div class="block">
+				<label>Light distance (d)</label>
+				<input type="range" id="slider_L_d">
+				<input type="text" id="text_L_d">
+			</div>
+		</form>
+		
 		<script src="libs/three.js"></script>
 		<script src="libs/OBJLoader.js"></script>
 		<script src="libs/OrbitControls.js"></script>
