@@ -3,7 +3,9 @@
 // Constants
 var WINDOW_WIDTH = 800;
 var WINDOW_HEIGHT = 600;
-var ALBEDO = 1.0;
+var ALBEDO = new Array(2);
+ALBEDO[0] = new THREE.Vector3(1,0,0);
+ALBEDO[1] = new THREE.Vector3(1,1,1);
 var USE_CACHE = false;
 var N_COEFFS = 9;
 var N_MONTE_CARLO = 50;
@@ -248,7 +250,7 @@ function computeG(G, v, verts, normals, samples) {
 	}
 
 	for(var k = 0; k < N_COEFFS; k++) {
-		G[v][k] *= ALBEDO / (Math.PI * N_MONTE_CARLO * pWi);
+		G[v][k] *= 1.0 / (Math.PI * N_MONTE_CARLO * pWi);
 	}
 }
 
@@ -310,12 +312,12 @@ function onUpdate() {
 			verts.array[v*3+1] = 0.0;
 			verts.array[v*3+2] = 0.0;
 			for(var i = 0; i < N_COEFFS; i++) {
-				var k = L_INTENSITY * L[i] * G[v][i] * ALBEDO;
+				var k = L_INTENSITY * L[i] * G[v][i];
 				k = Math.max(0.0,k);
 				k = Math.min(1.0,k);
-				verts.array[v*3+0] += k;
-				verts.array[v*3+1] += k;
-				verts.array[v*3+2] += k;
+				verts.array[v*3+0] += k * ALBEDO[j].x;
+				verts.array[v*3+1] += k * ALBEDO[j].y;
+				verts.array[v*3+2] += k * ALBEDO[j].z;
 			}
 		}
 
