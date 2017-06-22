@@ -478,12 +478,14 @@ function initControls() {
 	slider_order.step = 1;
 	slider_order.addEventListener("input", function() {
 		N_ORDER = parseFloat(slider_order.value);
+		N_COEFFS = N_ORDER*N_ORDER;
 		var text_order = document.getElementById("text_order");
 		text_order.value = N_ORDER;
 	});
 
 	text_order.addEventListener("change", function() {
 		N_ORDER = parseFloat(text_order.value);
+		N_COEFFS = N_ORDER*N_ORDER;
 		slider_order.value = N_ORDER;
 	});
 
