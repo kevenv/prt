@@ -100,10 +100,7 @@ function onInit() {
 	scene.add(lineZ);
 
 	// shader
-	basicShader = new THREE.ShaderMaterial( {
-		vertexShader : "attribute vec3 mycolor; varying vec3 vColor; void main() { vColor = mycolor; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
-		fragmentShader : "varying vec3 vColor; void main() { gl_FragColor = vec4(vColor,1.0); }"
-	});
+	basicShader = createShader();
 
 	// plane
 	var geometry = new THREE.PlaneBufferGeometry(10,10,100,100);
@@ -169,6 +166,26 @@ function createColorAttrib(mesh, color) {
 		colors[i*3+2] = color.z;
 	}
 	mesh.geometry.addAttribute("mycolor", new THREE.BufferAttribute(colors, 3));
+}
+
+function createShader() {
+	var vShaderStr = 
+	"attribute vec3 mycolor;" +
+	"varying vec3 vColor;" + 
+	"void main() {" + 
+	"	vColor = mycolor;" +
+	"	gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);" +
+	"}";
+	var fShaderStr = 
+	"varying vec3 vColor;" +
+	"void main() {" + 
+	"	gl_FragColor = vec4(vColor,1.0);" +
+	"}";
+	var shader = new THREE.ShaderMaterial( {
+		vertexShader : vShaderStr,
+		fragmentShader : fShaderStr
+	});
+	return shader;
 }
 
 function buildBVH(objects) {
