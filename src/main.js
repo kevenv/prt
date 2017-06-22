@@ -17,7 +17,8 @@ var WINDOW_HEIGHT = 600;
 var ALBEDO = new Array(2);
 ALBEDO[0] = new THREE.Vector3(1,0,0);
 ALBEDO[1] = new THREE.Vector3(1,1,1);
-var N_COEFFS = 9;
+var N_ORDER = 3;
+var N_COEFFS = N_ORDER*N_ORDER;
 var N_MONTE_CARLO = 100;
 var RAY_OFFSET = 1e-18;
 var MODEL_FILE_NAME = "teapot.obj";
@@ -267,7 +268,7 @@ function computeG(G, v, verts, normals, samples) {
 		var pWi = 1.0 / (4.0 * Math.PI);
 		var V = bvh.intersectRay(p, w, true).length == 0;
 		if(V) {
-			var yi = SHEval3(w.x, w.y, w.z);
+			var yi = SHEval(w.x, w.y, w.z, N_ORDER);
 			for(var k = 0; k < N_COEFFS; k++) {
 				G[v][k] += cosTheta * yi[k];
 			}
@@ -392,6 +393,9 @@ function initControls() {
 	var text_montecarlo = document.getElementById("text_montecarlo");
 	text_montecarlo.value = N_MONTE_CARLO;
 
+	var text_order = document.getElementById("text_order");
+	text_order.value = N_ORDER;
+
 	var text_savePRT = document.getElementById("text_savePRT");
 	text_savePRT.value = PRECOMPUTE_FILE_NAME;
 
@@ -464,6 +468,22 @@ function initControls() {
 	text_montecarlo.addEventListener("change", function() {
 		N_MONTE_CARLO = parseFloat(text_montecarlo.value);
 		slider_montecarlo.value = N_MONTE_CARLO;
+	});
+
+	var slider_order = document.getElementById("slider_order");
+	slider_order.defaultValue = N_ORDER;
+	slider_order.min = 3;
+	slider_order.max = 10;
+	slider_order.step = 1;
+	slider_order.addEventListener("input", function() {
+		N_ORDER = parseFloat(slider_order.value);
+		var text_order = document.getElementById("text_order");
+		text_order.value = N_ORDER;
+	});
+
+	text_order.addEventListener("change", function() {
+		N_ORDER = parseFloat(text_order.value);
+		slider_order.value = N_ORDER;
 	});
 
 	var button_computePRT = document.getElementById("button_computePRT");
