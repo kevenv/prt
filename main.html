@@ -5,7 +5,15 @@
 		<title>Precomputed Radiance Transfert (PRT)</title>
 		<style>
 			body { margin: 10; }
-			canvas { width: 800; height: 600; }
+
+			#viewport {
+				width: 800px; height: 600px;
+				float: left;
+			}
+
+			#ui {
+				float: right;
+			}
 
 			label {
 				display: inline-block;
@@ -15,7 +23,7 @@
 		</style>
 	</head>
 	<body>
-		<form>
+		<form id="ui">
 			<div class="block">
 				<label>Light intensity</label>
 				<input type="range" id="slider_L_intensity">
@@ -56,10 +64,14 @@
 			<div class="block">
 				<input type="text" id="text_savePRT">
 				<input type="button" value="Save PRT" id="button_savePRT">
+			</div>
+			<div class="block">
 				<input type="button" value="Load PRT" id="button_loadPRT">
 				<input type="file" id="file_loadPRT">
 			</div>
 		</form>
+
+		<div id="viewport"></div>
 		
 		<script src="libs/three.js"></script>
 		<script src="libs/OBJLoader.js"></script>

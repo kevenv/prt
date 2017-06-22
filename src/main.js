@@ -17,7 +17,7 @@ var WINDOW_HEIGHT = 600;
 var ALBEDO = new Array(2);
 ALBEDO[0] = new THREE.Vector3(1,0,0);
 ALBEDO[1] = new THREE.Vector3(1,1,1);
-var N_ORDER = 3;
+var N_ORDER = 5;
 var N_COEFFS = N_ORDER*N_ORDER;
 var N_MONTE_CARLO = 100;
 var RAY_OFFSET = 1e-18;
@@ -63,7 +63,8 @@ function onRender() {
 function onInit() {
 	renderer = new THREE.WebGLRenderer();
 	renderer.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-	document.body.appendChild(renderer.domElement);
+	var viewport = document.getElementById("viewport");
+	viewport.appendChild(renderer.domElement);
 
 	scene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(50, WINDOW_WIDTH/WINDOW_HEIGHT, 0.1, 1000);
