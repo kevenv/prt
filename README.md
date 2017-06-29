@@ -11,4 +11,10 @@ http://www.ppsloan.org/publications/shillum_final23.pdf
 ![alt text](https://preview.ibb.co/dK2dXk/ui.png)
 
 ## Usage
-Run using: `chrome --allow-file-access-from-files`
+Run using:
+
+### Windows
+`chrome --allow-file-access-from-files`
+
+### MacOS
+`/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --allow-file-access-from-files`
