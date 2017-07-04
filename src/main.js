@@ -17,7 +17,7 @@ var WINDOW_HEIGHT = 600;
 var ALBEDO = new Array(2);
 ALBEDO[0] = new THREE.Vector3(1,0,0);
 ALBEDO[1] = new THREE.Vector3(1,1,1);
-var N_ORDER = 5;
+var N_ORDER = 3;
 var N_COEFFS = N_ORDER*N_ORDER;
 var N_MONTE_CARLO = 100;
 var RAY_OFFSET = 1e-18;
@@ -314,10 +314,10 @@ function squareToUniformSphere(sample) {
 }
 
 function computeL_env_proj(r, d, dir) {
-	var L0 = computeL0_env_proj(r,d);
-	var y = SHEval3(dir.x, dir.y, dir.z);
+	var L0 = computeL0_env_proj[N_ORDER-3](r,d);
+	var y = SHEval(dir.x, dir.y, dir.z, N_ORDER);
 	var Lr = new Array(N_COEFFS);
-	for(var l = 0; l <= 2; l++) {
+	for(var l = 0; l <= N_ORDER-1; l++) {
 		for(var m = -l; m <= l; m++) {
 			var i = l*(l+1) + m;
 			Lr[i] = Math.sqrt(4*Math.PI / (2*l + 1)) * L0[l*(l+1)] * y[i];
@@ -326,7 +326,13 @@ function computeL_env_proj(r, d, dir) {
 	L = Lr;
 }
 
-function computeL0_env_proj(r, d) {
+var computeL0_env_proj = [
+	computeL0_env_proj_Order3,
+	computeL0_env_proj_Order4,
+	computeL0_env_proj_Order5
+];
+
+function computeL0_env_proj_Order3(r, d) {
 	// up = z
 	// based on sh.nb
 	var L0 = new Array(N_COEFFS);
@@ -340,6 +346,65 @@ function computeL0_env_proj(r, d) {
 	L0[6] = (Math.sqrt(5*Math.PI) * r*r * Math.sqrt(1 - (r*r)/(d*d))) / (2*d*d);
 	L0[7] = 0.0;
 	L0[8] = 0.0;
+
+	return L0;
+}
+
+function computeL0_env_proj_Order4(r, d) {
+	// up = z
+	// based on sh.nb
+	var L0 = new Array(N_COEFFS);
+
+	L0[0] = Math.sqrt(Math.PI) * (1 - Math.sqrt(1 - (r*r)/(d*d)));
+	L0[1] = 0.0;
+	L0[2] = (Math.sqrt(3*Math.PI) * r*r) / (2*d*d);
+	L0[3] = 0.0;
+	L0[4] = 0.0;
+	L0[5] = 0.0;
+	L0[6] = (Math.sqrt(5*Math.PI) * r*r * Math.sqrt(1 - (r*r)/(d*d))) / (2*d*d);
+	L0[7] = 0.0;
+	L0[8] = 0.0;
+	L0[9] = 0.0;
+	L0[10] = 0.0;
+	L0[11] = 0.0;
+	L0[12] = (Math.sqrt(7*Math.PI) * r*r * (4*d*d - 5*r*r)) / (8*d*d*d*d);
+	L0[13] = 0.0;
+	L0[14] = 0.0;
+	L0[15] = 0.0;
+
+	return L0;
+}
+
+function computeL0_env_proj_Order5(r, d) {
+	// up = z
+	// based on sh.nb
+	var L0 = new Array(N_COEFFS);
+
+	L0[0] = Math.sqrt(Math.PI) * (1 - Math.sqrt(1 - (r*r)/(d*d)));
+	L0[1] = 0.0;
+	L0[2] = (Math.sqrt(3*Math.PI) * r*r) / (2*d*d);
+	L0[3] = 0.0;
+	L0[4] = 0.0;
+	L0[5] = 0.0;
+	L0[6] = (Math.sqrt(5*Math.PI) * r*r * Math.sqrt(1 - (r*r)/(d*d))) / (2*d*d);
+	L0[7] = 0.0;
+	L0[8] = 0.0;
+	L0[9] = 0.0;
+	L0[10] = 0.0;
+	L0[11] = 0.0;
+	L0[12] = (Math.sqrt(7*Math.PI) * r*r * (4*d*d - 5*r*r)) / (8*d*d*d*d);
+	L0[13] = 0.0;
+	L0[14] = 0.0;
+	L0[15] = 0.0;
+	L0[16] = 0.0;
+	L0[17] = 0.0;
+	L0[18] = 0.0;
+	L0[19] = 0.0;
+	L0[20] = (3*r*r * (4*d*d - 7*r*r) * Math.sqrt(Math.PI - ((Math.PI*r*r)/(d*d)))) / (8*d*d*d*d);
+	L0[21] = 0.0;
+	L0[22] = 0.0;
+	L0[23] = 0.0;
+	L0[24] = 0.0;
 
 	return L0;
 }
@@ -491,7 +556,7 @@ function initControls() {
 	var slider_order = document.getElementById("slider_order");
 	slider_order.defaultValue = N_ORDER;
 	slider_order.min = 3;
-	slider_order.max = 10;
+	slider_order.max = 6;
 	slider_order.step = 1;
 	slider_order.addEventListener("input", function() {
 		N_ORDER = parseFloat(slider_order.value);
