@@ -150,7 +150,6 @@ function loadModel() {
 
 		// init
 		buildBVH(objects);
-		precomputeL();
 
 		loadedModel = object;
 	});
@@ -573,6 +572,7 @@ function initControls() {
 
 	var button_computePRT = document.getElementById("button_computePRT");
 	button_computePRT.addEventListener("click", function() {
+		precomputeL();
 		precomputeG(false);
 	});
 
@@ -596,6 +596,7 @@ function initControls() {
 		var loc = window.location.pathname;
 		var dir = loc.substring(0, loc.lastIndexOf('/'));
 		PRECOMPUTE_FILE_PATH = dir + "/" + PRECOMPUTE_FILE_NAME;
+		precomputeL();
 		precomputeG(true);
 	});
 }
