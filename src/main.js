@@ -555,7 +555,7 @@ function initControls() {
 	var slider_order = document.getElementById("slider_order");
 	slider_order.defaultValue = N_ORDER;
 	slider_order.min = 3;
-	slider_order.max = 6;
+	slider_order.max = 5;
 	slider_order.step = 1;
 	slider_order.addEventListener("input", function() {
 		N_ORDER = parseFloat(slider_order.value);
